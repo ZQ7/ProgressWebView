@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ProgressWebView">
+        <!--进度条颜色-->
+        <attr name="useProgress" format="boolean"/>
+        <attr name="progressColor" format="color"/>
+        <attr name="progressHeight" format="dimension"/>
+    </declare-styleable>
+</resources>
