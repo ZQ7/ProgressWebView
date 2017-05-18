@@ -88,10 +88,30 @@ class ProgressView extends View {
      * 设置进度条颜色
      * @param defaultColor
      */
-    public void setProgressColor(int defaultColor) {
+    void setProgressColor(int defaultColor) {
         progressPaint.setColor(defaultColor);
         progressCirclePaint.setColor(defaultColor);
+        invalidate();
+    }
 
+    /**
+     * 设置高度
+     * @param height
+     */
+    void setProgressHeight(int height){
+        viewHeight = height;
+        invalidate();
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (visibility == View.GONE||visibility==View.INVISIBLE){
+            isHide = true;
+            currentProgress = 0;
+        }else {
+            isHide = false;
+        }
     }
 
     /**

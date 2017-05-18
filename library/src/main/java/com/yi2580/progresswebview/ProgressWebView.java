@@ -8,6 +8,8 @@ import android.net.http.SslError;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.GeolocationPermissions;
 import android.webkit.SslErrorHandler;
@@ -38,7 +40,7 @@ public class ProgressWebView extends WebView {
 
     private boolean useProgress;//是否使用进度条
     private int progressColor;//进度条眼色
-    private int progressHright;//进度条高度
+    private int progressHeight;//进度条高度
 
     public ProgressWebView(Context context) {
         this(context, null);
@@ -53,7 +55,7 @@ public class ProgressWebView extends WebView {
         ta = context.obtainStyledAttributes(attrs, R.styleable.ProgressWebView);
         useProgress = ta.getBoolean(R.styleable.ProgressWebView_useProgress, true);
         progressColor = ta.getColor(R.styleable.ProgressWebView_progressColor, Color.RED);
-        progressHright = ta.getDimensionPixelSize(R.styleable.ProgressWebView_progressHeight, 5);
+        progressHeight = ta.getDimensionPixelSize(R.styleable.ProgressWebView_progressHeight, 5);
         ta.recycle();
 
         init(context, attrs);
@@ -67,19 +69,78 @@ public class ProgressWebView extends WebView {
         mWebChromeClient = new ProgressWebChromeClient();
         this.setWebChromeClient(mWebChromeClient);
         mWebSettings = this.getSettings();
+        createViews();
+    }
+
+    /**
+     * When create ProgressWebView not in XML,Call this method.
+     *
+     * @param height
+     * @param color
+     */
+    public void useProgress(int height, int color) {
+        useProgress = true;
+        progressHeight = height;
+        progressColor = color;
+        if (mProgressView == null) {
+            createViews();
+        } else {
+            setProgressHeight(progressHeight);
+            mProgressView.setProgressColor(color);
+        }
+    }
+
+    /**
+     * 是否使用进度条
+     *
+     * @param isUsed
+     */
+    public void isUseProgress(boolean isUsed) {
+        useProgress = isUsed;
+        if (isUsed) {
+            if (mProgressView == null) {
+                createViews();
+            }
+        } else {
+            if (mProgressView != null) {
+                mProgressView.setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
+    /**
+     * 设置进度条颜色
+     *
+     * @param color
+     */
+    public void setProgressColor(int color) {
+        if (mProgressView != null) {
+            mProgressView.setProgressColor(color);
+        }
+    }
+
+    /**
+     * 设置进度条高度
+     *
+     */
+    public void setProgressHeight(int height) {
+        if (mProgressView != null) {
+            progressHeight = height;
+            mProgressView.setProgressHeight(progressHeight);
+        }
     }
 
     /**
      * 调用JS方法.安卓版本大于17,加上注解 @JavascriptInterface
      */
-    public void openJavaScript(){
+    public void openJavaScript() {
         mWebSettings.setJavaScriptEnabled(true);
     }
 
     /**
      * 设置自适应屏幕，两者合用
      */
-    public void viewAdaption(){
+    public void viewAdaption() {
         mWebSettings.setUseWideViewPort(true); //将图片调整到适合webview的大小
         mWebSettings.setLoadWithOverviewMode(true); // 缩放至屏幕的大小
     }
@@ -87,7 +148,7 @@ public class ProgressWebView extends WebView {
     /**
      * 缩放操作
      */
-    public void viewZoom(){
+    public void viewZoom() {
         mWebSettings.setSupportZoom(true); //支持缩放，默认为true。是下面那个的前提。
         mWebSettings.setBuiltInZoomControls(true); //设置内置的缩放控件。若为false，则该WebView不可缩放
         mWebSettings.setDisplayZoomControls(false); //隐藏原生的缩放控件
@@ -96,7 +157,7 @@ public class ProgressWebView extends WebView {
     /**
      * 其他细节操作
      */
-    public void  openOtherSetting(){
+    public void openOtherSetting() {
         //其他细节操作
         mWebSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK); //关闭webview中缓存
         mWebSettings.setAllowFileAccess(true); //设置可以访问文件
@@ -127,21 +188,21 @@ public class ProgressWebView extends WebView {
     }
 
     /**
-     * 渲染完成时初始化view
+     * 渲染完成时初始化view(仅限xml)
      */
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        findViews();
     }
 
     /**
      * 初始化viwe
      */
-    private void findViews() {
-        if (useProgress) {
+    private void createViews() {
+        Log.e("ProgressWebView", "CreateWebView");
+        if (useProgress && mProgressView == null) {
             mProgressView = new ProgressView(getContext());
-            ViewGroup.LayoutParams mLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, progressHright);
+            ViewGroup.LayoutParams mLayoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, progressHeight);
             mProgressView.setLayoutParams(mLayoutParams);
             mProgressView.setProgressColor(progressColor);
             addView(mProgressView);
@@ -158,7 +219,6 @@ public class ProgressWebView extends WebView {
     public void loadAssetUrl(String url) {
         loadUrl("file:///android_asset/" + url);
     }
-
 
 
     public ProgressWebViewClient getProgressWebViewClient() {
@@ -180,19 +240,21 @@ public class ProgressWebView extends WebView {
 
     /**
      * 返回前一个页面
-     * @return
+     *
+     * @return 是否消费返回事件
      */
-    public boolean mGoBack(){
-        if (this.canGoBack()){
+    public boolean mGoBack() {
+        if (this.canGoBack()) {
             this.goBack();
             return true;
         }
         return false;
     }
+
     /**
      * 销毁WebView
      */
-    public void destroy() {
+    public void mDestroy() {
         if (this != null) {
             this.clearHistory();
             ((ViewGroup) getParent()).removeView(this);
@@ -212,6 +274,7 @@ public class ProgressWebView extends WebView {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             //复写shouldOverrideUrlLoading()方法，使得打开网页时不调用系统浏览器， 而是在本WebView中显示
+            Log.e("ProgressWebView", "url : " + url);
             view.loadUrl(url);
             return true;
         }
@@ -255,7 +318,8 @@ public class ProgressWebView extends WebView {
         //网页加载进度
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-            if (mProgressView != null) {
+            Log.e("ProgressWebView", "Progress == " + newProgress);
+            if (mProgressView != null && useProgress) {
                 mProgressView.setProgress(newProgress);
             }
         }
@@ -265,6 +329,7 @@ public class ProgressWebView extends WebView {
         public void onReceivedTitle(WebView view, String title) {
 
         }
+
         //多窗口的问题
         @Override
         public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
@@ -273,6 +338,7 @@ public class ProgressWebView extends WebView {
             resultMsg.sendToTarget();
             return true;
         }
+
         //=========HTML5定位==========================================================
         //需要先加入权限
         //<uses-permission android:name="android.permission.INTERNET"/>
