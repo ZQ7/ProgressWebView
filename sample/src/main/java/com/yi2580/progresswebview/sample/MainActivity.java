@@ -3,10 +3,13 @@ package com.yi2580.progresswebview.sample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebView;
 
+import com.yi2580.progresswebview.OnWebViewLoad;
 import com.yi2580.progresswebview.ProgressWebView;
 
 import static android.view.KeyEvent.KEYCODE_BACK;
@@ -30,6 +33,24 @@ public class MainActivity extends AppCompatActivity {
         mWebView.openSaveData();
 
         mWebView.loadUrl("https://sina.cn/");
+
+        mWebView.setOnWebViewLoadListener(new OnWebViewLoad() {
+            @Override
+            protected void onProgressChanged(int progress) {
+                super.onProgressChanged(progress);
+            }
+
+            @Override
+            protected void onReceivedTitle(String title) {
+                Log.e("MainActivity",title);
+            }
+
+            @Override
+            protected boolean loadUrl(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+        });
     }
 
     @Override

@@ -3,11 +3,14 @@ package com.yi2580.progresswebview.sample;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import com.yi2580.progresswebview.OnWebViewLoad;
 import com.yi2580.progresswebview.ProgressWebView;
 
 /**
@@ -43,6 +46,23 @@ public class WebViewInCodeActivity extends AppCompatActivity implements View.OnC
         mWebView.openOtherSetting();
         //mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.loadUrl("http://hz.m.sohu.com/");
+        mWebView.setOnWebViewLoadListener(new OnWebViewLoad() {
+            @Override
+            protected void onProgressChanged(int progress) {
+                super.onProgressChanged(progress);
+            }
+
+            @Override
+            protected void onReceivedTitle(String title) {
+                Log.e("WebViewInCodeActivity",title);
+            }
+
+            @Override
+            protected boolean loadUrl(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+        });
     }
 
     @Override

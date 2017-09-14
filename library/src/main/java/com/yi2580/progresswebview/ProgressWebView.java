@@ -36,27 +36,26 @@ public class ProgressWebView extends WebView {
     //WebChromeClient类(辅助 WebView 处理 Javascript 的对话框,网站图标,网站标题等等。)
     private ProgressWebChromeClient mWebChromeClient;
 
-    private TypedArray ta;
+    private OnWebViewLoad onWebViewLoad;
+
 
     private boolean useProgress;//是否使用进度条
     private int progressColor;//进度条眼色
     private int progressHeight;//进度条高度
 
     public ProgressWebView(Context context) {
-        this(context, null);
+        super(context);
+        init(context, null);
     }
 
     public ProgressWebView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init(context, attrs);
     }
 
     public ProgressWebView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        ta = context.obtainStyledAttributes(attrs, R.styleable.ProgressWebView);
-        useProgress = ta.getBoolean(R.styleable.ProgressWebView_useProgress, true);
-        progressColor = ta.getColor(R.styleable.ProgressWebView_progressColor, Color.RED);
-        progressHeight = ta.getDimensionPixelSize(R.styleable.ProgressWebView_progressHeight, 5);
-        ta.recycle();
+
 
         init(context, attrs);
 
@@ -64,12 +63,29 @@ public class ProgressWebView extends WebView {
 
 
     private void init(Context context, AttributeSet attrs) {
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ProgressWebView);
+        useProgress = ta.getBoolean(R.styleable.ProgressWebView_useProgress, true);
+        progressColor = ta.getColor(R.styleable.ProgressWebView_progressColor, Color.RED);
+        progressHeight = ta.getDimensionPixelSize(R.styleable.ProgressWebView_progressHeight, 5);
+        ta.recycle();
+
         mWebViewClient = new ProgressWebViewClient();
         this.setWebViewClient(mWebViewClient);
         mWebChromeClient = new ProgressWebChromeClient();
         this.setWebChromeClient(mWebChromeClient);
         mWebSettings = this.getSettings();
         createViews();
+    }
+
+    /**
+     * 设置WebView加载事件
+     *
+     * @param onWebViewLoad
+     */
+    public void setOnWebViewLoadListener(OnWebViewLoad onWebViewLoad) {
+        if (onWebViewLoad == null)
+            return;
+        this.onWebViewLoad = onWebViewLoad;
     }
 
     /**
@@ -121,7 +137,6 @@ public class ProgressWebView extends WebView {
 
     /**
      * 设置进度条高度
-     *
      */
     public void setProgressHeight(int height) {
         if (mProgressView != null) {
@@ -275,9 +290,20 @@ public class ProgressWebView extends WebView {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             //复写shouldOverrideUrlLoading()方法，使得打开网页时不调用系统浏览器， 而是在本WebView中显示
             Log.e("ProgressWebView", "url : " + url);
-            view.loadUrl(url);
-            return true;
+
+            if (onWebViewLoad != null) {
+                return onWebViewLoad.loadUrl(view, url);
+            } else {
+                view.loadUrl(url);
+                return true;
+            }
         }
+
+        /*@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return super.shouldOverrideUrlLoading(view, request);
+        }*/
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -322,12 +348,18 @@ public class ProgressWebView extends WebView {
             if (mProgressView != null && useProgress) {
                 mProgressView.setProgress(newProgress);
             }
+            if (onWebViewLoad != null) {
+                onWebViewLoad.onProgressChanged(newProgress);
+            }
         }
 
         //网页标题
         @Override
         public void onReceivedTitle(WebView view, String title) {
-
+            Log.e("ProgressWebView", "title == " + title);
+            if (onWebViewLoad != null) {
+                onWebViewLoad.onReceivedTitle(title);
+            }
         }
 
         //多窗口的问题
