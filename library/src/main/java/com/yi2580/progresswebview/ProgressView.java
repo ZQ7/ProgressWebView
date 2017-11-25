@@ -86,6 +86,7 @@ class ProgressView extends View {
 
     /**
      * 设置进度条颜色
+     *
      * @param defaultColor
      */
     void setProgressColor(int defaultColor) {
@@ -96,9 +97,10 @@ class ProgressView extends View {
 
     /**
      * 设置高度
+     *
      * @param height
      */
-    void setProgressHeight(int height){
+    void setProgressHeight(int height) {
         viewHeight = height;
         invalidate();
     }
@@ -106,10 +108,10 @@ class ProgressView extends View {
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
-        if (visibility == View.GONE||visibility==View.INVISIBLE){
+        if (visibility == View.GONE || visibility == View.INVISIBLE) {
             isHide = true;
             currentProgress = 0;
-        }else {
+        } else {
             isHide = false;
         }
     }
@@ -118,6 +120,7 @@ class ProgressView extends View {
      * 设置进度
      */
     ValueAnimator animator;
+
     public void setProgress(int progress) {
         totalProgress = progress;
         if (animator != null) {

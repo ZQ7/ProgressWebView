@@ -17,10 +17,11 @@ import com.yi2580.progresswebview.ProgressWebView;
  * Created by zhangqi on 2017/5/12.
  */
 
-public class WebViewInCodeActivity extends AppCompatActivity implements View.OnClickListener{
+public class WebViewInCodeActivity extends AppCompatActivity implements View.OnClickListener {
     private LinearLayout webViewLayout;
     private ProgressWebView mWebView;
     private Button mButton;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +55,7 @@ public class WebViewInCodeActivity extends AppCompatActivity implements View.OnC
 
             @Override
             protected void onReceivedTitle(String title) {
-                Log.e("WebViewInCodeActivity",title);
+                Log.e("WebViewInCodeActivity", title);
             }
 
             @Override

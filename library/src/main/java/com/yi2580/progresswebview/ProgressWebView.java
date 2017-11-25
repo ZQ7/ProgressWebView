@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.webkit.GeolocationPermissions;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -38,6 +40,7 @@ public class ProgressWebView extends WebView {
 
     private OnWebViewLoad onWebViewLoad;
 
+    private View loadingView;
 
     private boolean useProgress;//是否使用进度条
     private int progressColor;//进度条眼色
@@ -83,9 +86,14 @@ public class ProgressWebView extends WebView {
      * @param onWebViewLoad
      */
     public void setOnWebViewLoadListener(OnWebViewLoad onWebViewLoad) {
-        if (onWebViewLoad == null)
+        if (onWebViewLoad == null) {
             return;
+        }
         this.onWebViewLoad = onWebViewLoad;
+    }
+
+    public void setLoadingView(View view) {
+        this.loadingView = view;
     }
 
     /**
@@ -285,6 +293,7 @@ public class ProgressWebView extends WebView {
      * WebViewClient
      */
     public class ProgressWebViewClient extends WebViewClient {
+        boolean frist = true;
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -299,32 +308,51 @@ public class ProgressWebView extends WebView {
             }
         }
 
-        /*@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             return super.shouldOverrideUrlLoading(view, request);
-        }*/
+
+        }
+
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            //设定加载开始的操作
+            super.onPageStarted(view, url, favicon);
+            if (frist && loadingView != null) {
+                frist = false;
+                int marginTop = 0;
+                if (useProgress) {
+                    marginTop = progressHeight;
+                }
+                ViewGroup.LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 0, marginTop);
+                if (loadingView.getParent() != null) {
+                    ((ProgressWebView) loadingView.getParent()).removeView(loadingView);
+                }
+                view.addView(loadingView, layoutParams);
+            }
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
             //设定加载结束的操作
+            if (loadingView != null) {
+                view.removeView(loadingView);
+                loadingView = null;
+            }
         }
 
         @Override
         public void onLoadResource(WebView view, String url) {
-            //设定加载资源的操作
             super.onLoadResource(view, url);
+            //设定加载资源的操作
         }
 
         @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            super.onReceivedError(view, errorCode, description, failingUrl);
+        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+            super.onReceivedError(view, request, error);
         }
+
 
         //webView默认是不处理https请求的，页面显示空白，需要进行如下设置：
         @Override
@@ -340,11 +368,10 @@ public class ProgressWebView extends WebView {
      * WebChromeClient
      */
     public class ProgressWebChromeClient extends WebChromeClient {
-
         //网页加载进度
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-            Log.e("ProgressWebView", "Progress == " + newProgress);
+            //Log.e("ProgressWebView", "Progress == " + newProgress);
             if (mProgressView != null && useProgress) {
                 mProgressView.setProgress(newProgress);
             }
@@ -356,7 +383,7 @@ public class ProgressWebView extends WebView {
         //网页标题
         @Override
         public void onReceivedTitle(WebView view, String title) {
-            Log.e("ProgressWebView", "title == " + title);
+            //Log.e("ProgressWebView", "title == " + title);
             if (onWebViewLoad != null) {
                 onWebViewLoad.onReceivedTitle(title);
             }

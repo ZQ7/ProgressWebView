@@ -1,43 +1,38 @@
 package com.yi2580.progresswebview.sample;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.WebView;
 import android.widget.ImageView;
 
-import com.yi2580.progresswebview.OnWebViewLoad;
-import com.yi2580.progresswebview.ProgressWebView;
+import com.tencent.smtt.sdk.WebView;
+import com.yi2580.progresswebview.OnX5WebViewLoad;
+import com.yi2580.progresswebview.X5WebView;
 
 import static android.view.KeyEvent.KEYCODE_BACK;
 
-public class MainActivity extends AppCompatActivity {
+public class X5WebViewActivity extends AppCompatActivity {
 
-    private ProgressWebView mWebView;
+    private X5WebView mWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_x5_webview);
 
-        mWebView = (ProgressWebView) findViewById(R.id.main_webview);
+        mWebView = (X5WebView) findViewById(R.id.webview);
 
-        mWebView.openJavaScript();
-//        mWebView.viewAdaption();
-//        mWebView.viewZoom();
-//        mWebView.openOtherSetting();
-        mWebView.openNewWin();
-        mWebView.openSaveData();
 
         //mWebView.loadUrl("https://sina.cn/");
-        //mWebView.loadUrl("https://portal.3g.qq.com");
-        mWebView.loadUrl("https://www.biyouxinjr.com/accredit/index.htm?params=/wx/open/index.html?user_channel=APPJZSH&mobile=e4eVczKEnozJeKNoY4SzS7uFrDInzxpPa4DnOC6DrdC0JhxGNZpi9a2QNi/sYYSwWdjpv9XR96TBXIvJ7VMyby+U9EM3buL/Kzduaso3sL5O+pn/zFoiouNG46wL7ze8UFujLcUADW1nBGwdasdbTwZJpohD6ZPZaL9mGvDJGYk=&user_terminal=1&sign=A171A12DDDE41E4A77F962897052A3FA");
+        mWebView.openSaveData();
+        mWebView.loadUrl("http://www.hulusaas.com/protocol");
 
-        mWebView.setOnWebViewLoadListener(new OnWebViewLoad() {
+        mWebView.setOnWebViewLoadListener(new OnX5WebViewLoad() {
             @Override
             protected void onProgressChanged(int progress) {
                 super.onProgressChanged(progress);
@@ -45,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected void onReceivedTitle(String title) {
-                Log.e("MainActivity",title);
+                Log.e("MainActivity", title);
             }
 
             @Override
@@ -56,8 +51,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ImageView imageView = new ImageView(this);
+        imageView.setBackgroundColor(Color.BLUE);
         imageView.setImageResource(R.mipmap.ic_launcher);
-        mWebView.setLoadingView(imageView);
+        mWebView.setPlaceholderView(imageView);
     }
 
     @Override
@@ -77,13 +73,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mWebView.mDestroy();
+        mWebView.destroy();
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KEYCODE_BACK){
-            return mWebView.mGoBack();
+        if (keyCode == KEYCODE_BACK) {
+            return mWebView.goBack();
         }
         return super.onKeyUp(keyCode, event);
     }
